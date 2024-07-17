@@ -1,0 +1,12 @@
+{
+  "postgresConnectionString": "Server=127.0.0.1;Port=5432;Database=AlbomNeolant;UserId=postgres;Password=postgres;",
+  "MongoDb": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "AlbomNeolant",
+    "CollectionName": "albums"
+  },
+  "DownloadStrings": {
+    "Albums": "https://jsonplaceholder.typicode.com/albums",
+    "Photos": "https://jsonplaceholder.typicode.com/photos"
+  }
+}
