@@ -6,10 +6,10 @@
         xmlns:local="clr-namespace:WpfNeolant"
         xmlns:model="clr-namespace:WpfNeolant.Model"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="600" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="5*"/>
         </Grid.ColumnDefinitions>
 
@@ -18,7 +18,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <ListBox Name="lbAlbums"
+            <ListBox Background="#000" Foreground="#fff" Name="lbAlbums"
                 Grid.Row="0" ItemsSource="{Binding Albums}" SelectionChanged="lbAlbums_SelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -27,7 +27,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
-        <ListBox Grid.Column="1" Margin="5,0,0,0" ItemsSource="{Binding Photos}">
+        <ListBox Background="#000" Foreground="#fff" Grid.Column="1" Margin="5,0,0,0" ItemsSource="{Binding Photos}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Title}"/>

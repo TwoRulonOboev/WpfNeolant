@@ -1,6 +1,8 @@
 ﻿using WpfNeolant.Model;
 using WpfNeolant.ViewModel;
 using System.Windows;
+using System.Windows.Controls;
+using WpfNeolant.Data.Interfaces;
 
 namespace WpfNeolant
 {
@@ -10,12 +12,14 @@ namespace WpfNeolant
     public partial class MainWindow : Window
     {
         private readonly IMainWindowViewModel _viewModel;
+        private readonly IMongoDbDataLoader _mongoDbDataLoader;
 
-        public MainWindow(IMainWindowViewModel vm)
+        public MainWindow(IMainWindowViewModel vm, IMongoDbDataLoader mongoDbDataLoader)
         {
             InitializeComponent();
             DataContext = vm;
             _viewModel = vm;
+            _mongoDbDataLoader = mongoDbDataLoader;
 
             // Load data when the window is loaded
             Loaded += MainWindow_Loaded;
@@ -27,13 +31,18 @@ namespace WpfNeolant
             await _viewModel.LoadDataToPostgreAsync();
             // Загрузка данных из базы данных после вставки
             _viewModel.LoadDataFromPostgres();
+
+            // Удаление и создание коллекции в MongoDB
+            await _mongoDbDataLoader.LoadDbAsync();
         }
 
-        private void lbAlbums_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void lbAlbums_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(lbAlbums.SelectedItem is Album a)) return;
-
-            _viewModel.UpdatePhotos(a);
+            if (e.AddedItems.Count > 0)
+            {
+                _viewModel.SelectedAlbum = e.AddedItems[0] as Album;
+                _viewModel.LoadPhotosForAlbum();
+            }
         }
     }
 }

@@ -9,51 +9,53 @@ using WpfNeolant.ViewModel;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
+using WpfNeolant;
 
 namespace WpfNeolant
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // Создаешь конфигуратор
-
+            // Создаем конфигуратор, который будет читать настройки из файла config.json
             IConfiguration config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
 
-            HttpClient httpClient = new HttpClient();
-            MongoClient mongoClient = new MongoClient(config["MongoDb:ConnectionString"]);
-
-
-            // Регистрируешь зависимости
-
+            // Регистрируем зависимости для нашего приложения
             ServiceCollection services = new ServiceCollection();
 
-
+            // Регистрируем конфигуратор как singleton
             services.AddSingleton(config)
-                .AddSingleton(httpClient)
-                .AddSingleton<IMongoClient>(mongoClient)
+                // Регистрируем HttpClient как singleton
+                .AddSingleton<HttpClient>()
+                // Регистрируем MongoClient как транзакционный объект, который будет создаваться каждый раз, когда он будет запрошен
+                .AddTransient<IMongoClient>(provider =>
+                {
+                    // Получаем конфигуратор из провайдера сервисов
+                    var cfg = provider.GetService<IConfiguration>();
+                    // Создаем MongoClient с помощью строки подключения из конфигурации
+                    return new MongoClient(cfg["MongoDb:ConnectionString"]);
+                })
+                // Регистрируем MongoDBDataLoader как транзакционный объект, который будет создаваться каждый раз, когда он будет запрошен
                 .AddTransient<IMongoDbDataLoader, MongoDBDataLoader>()
+                // Регистрируем PostgresDataLoader как транзакционный объект, который будет создаваться каждый раз, когда он будет запрошен
                 .AddTransient<IPostgresDataLoader, PostgresDataLoader>()
-                .AddSingleton<IMainWindowViewModel, MainWindowViewModel>()
+                // Регистрируем MainWindowViewModel как транзакционный объект, который будет создаваться каждый раз, когда он будет запрошен
+                .AddTransient<IMainWindowViewModel, MainWindowViewModel>()
+                // Регистрируем MainWindow как транзакционный объект, который будет создаваться каждый раз, когда он будет запрошен
                 .AddTransient<MainWindow>();
 
-            App.Current.MainWindow = services.BuildServiceProvider().GetService<MainWindow>();
-            App.Current.MainWindow.Show();
+            // Создаем провайдер сервисов на основе зарегистрированных зависимостей
+            var serviceProvider = services.BuildServiceProvider();
 
-
-            // Разрешаешь зависимость                                               
-            // App.Current.MainWindow = Resolve<MainWindow>(); - Resolve один раз   
-            // App.Current.MainWindow.Show();                                       
-
-
+            // Получаем главное окно из провайдера сервисов
+            App.Current.MainWindow = serviceProvider.GetService<MainWindow>();
+            // Показываем главное окно
+            App.Current.MainWindow!.Show();
         }
     }
 }
